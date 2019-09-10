@@ -22,6 +22,9 @@
 */
 package org.infinispan.visualizer.rest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
  */
@@ -33,7 +36,14 @@ public class CacheNameInfo {
    }
 
    public void setNames(String[] names) {
-      this.names = names;
+      // Filter out internal cache names
+      List<String> validNames = new ArrayList<>();
+      for (String name : names) {
+         if (!name.startsWith("org.infinispan"))
+            validNames.add(name);
+      }
+
+      this.names = validNames.toArray(new String[0]);
    }
 
 }
