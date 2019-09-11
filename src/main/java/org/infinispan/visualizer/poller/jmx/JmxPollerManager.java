@@ -47,20 +47,7 @@ public abstract class JmxPollerManager<I, T, P extends JmxPoller<T>> extends Rem
 
    abstract protected JMXServiceURL generateServiceURL(SocketAddress address) throws MalformedURLException;
 
-   abstract protected P createPoller(JMXServiceURL url, Map<String, Object> env);
-
-   protected P createPoller(SocketAddress address)
-         throws Exception {
-
-      JMXServiceURL serviceURL = generateServiceURL(address);
-
-      Map<String, Object> env = new HashMap<>();
-      if (jmxUsername != null && jmxPassword != null) {
-         env.put(JMXConnector.CREDENTIALS, new String[]{jmxUsername, jmxPassword});
-      }
-
-      return createPoller(serviceURL, env);
-   }
+   abstract protected P createPoller(SocketAddress address);
 
    public int getJmxHotrodPortOffset() {
       return jmxHotrodPortOffset;

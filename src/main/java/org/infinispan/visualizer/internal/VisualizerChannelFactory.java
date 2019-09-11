@@ -29,8 +29,8 @@ import java.util.Collection;
 /**
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
  */
-public class VisualizerTcpTransportFactory extends
-      org.infinispan.client.hotrod.impl.transport.tcp.TcpTransportFactory {
+public class VisualizerChannelFactory extends
+      org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory {
 
    private volatile ServersRegistry registry;
 

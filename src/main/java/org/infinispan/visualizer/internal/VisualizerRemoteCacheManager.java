@@ -24,18 +24,21 @@
 package org.infinispan.visualizer.internal;
 
 import java.lang.reflect.Field;
-import java.util.Properties;
 
 import javax.enterprise.inject.Alternative;
 
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.configuration.Configuration;
+import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+import org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory;
+import org.infinispan.commons.marshall.UTF8StringMarshaller;
 
 /**
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
  */
 @Alternative
 public class VisualizerRemoteCacheManager extends RemoteCacheManager {
-   public static final String TRANSPORT_FACTORY = VisualizerTcpTransportFactory.class.getName();
+   private static final Class<? extends ChannelFactory> CHANNEL_FACTORY = VisualizerChannelFactory.class;
 
    private ServersRegistry registry;
    private PingThread pingThread;
@@ -54,7 +57,7 @@ public class VisualizerRemoteCacheManager extends RemoteCacheManager {
 
       this.registry = new ServersRegistry();
 
-      VisualizerTcpTransportFactory factory = getTransportFactoryViaReflection();
+      VisualizerChannelFactory factory = getTransportFactoryViaReflection();
       if (factory != null) {
          factory.setRegistry(registry);
          factory.updateServerRegistry();
@@ -64,11 +67,11 @@ public class VisualizerRemoteCacheManager extends RemoteCacheManager {
       pingThread.start();
    }
 
-   protected VisualizerTcpTransportFactory getTransportFactoryViaReflection() {
+   protected VisualizerChannelFactory getTransportFactoryViaReflection() {
       try {
-         Field transportFactoryField = RemoteCacheManager.class.getDeclaredField("transportFactory");
-         transportFactoryField.setAccessible(true);
-         return (VisualizerTcpTransportFactory) transportFactoryField.get(this);
+         Field channelFactoryField = RemoteCacheManager.class.getDeclaredField("channelFactory");
+         channelFactoryField.setAccessible(true);
+         return (VisualizerChannelFactory) channelFactoryField.get(this);
       } catch (Exception e) {
          e.printStackTrace();
          return null;
@@ -85,10 +88,14 @@ public class VisualizerRemoteCacheManager extends RemoteCacheManager {
    }
 
 
-   public static Properties getCacheProperties() {
-      Properties props = new Properties();
-      props.setProperty("infinispan.client.hotrod.server_list", System.getProperty("infinispan.visualizer.serverList"));
-      props.setProperty("infinispan.client.hotrod.transport_factory", TRANSPORT_FACTORY);
-      return props;
+   public static Configuration getCacheProperties() {
+      ConfigurationBuilder builder = new ConfigurationBuilder();
+
+      builder
+         .addServers(System.getProperty("infinispan.visualizer.serverList"))
+         .marshaller(new UTF8StringMarshaller())
+         .channelFactory(CHANNEL_FACTORY);
+
+      return builder.build();
    }
 }

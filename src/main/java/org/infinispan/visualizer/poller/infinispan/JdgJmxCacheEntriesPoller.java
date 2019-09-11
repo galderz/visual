@@ -23,11 +23,13 @@
 
 package org.infinispan.visualizer.poller.infinispan;
 
+import java.net.SocketAddress;
 import java.util.Map;
 
 import javax.management.ObjectName;
 import javax.management.remote.JMXServiceURL;
 
+import org.infinispan.visualizer.internal.VisualizerRemoteCacheManager;
 import org.infinispan.visualizer.poller.jmx.JmxCacheEntriesPoller;
 
 /**
@@ -35,8 +37,8 @@ import org.infinispan.visualizer.poller.jmx.JmxCacheEntriesPoller;
  */
 public class JdgJmxCacheEntriesPoller extends JmxCacheEntriesPoller {
    public JdgJmxCacheEntriesPoller(JMXServiceURL jmxUrl,
-                                   Map<String, Object> jmxEnv, String cacheName) {
-      super(jmxUrl, jmxEnv, cacheName);
+      Map<String, Object> jmxEnv, String cacheName, VisualizerRemoteCacheManager cacheManager, SocketAddress address) {
+      super(jmxUrl, jmxEnv, cacheName, cacheManager, address);
    }
 
    @Override

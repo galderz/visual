@@ -23,7 +23,13 @@
 
 package org.infinispan.visualizer.poller.jmx;
 
+import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.commons.util.CloseableIterator;
+import org.infinispan.visualizer.internal.VisualizerRemoteCacheManager;
+
+import java.net.SocketAddress;
 import java.util.Map;
+import java.util.Set;
 
 import javax.management.ObjectName;
 import javax.management.remote.JMXServiceURL;
@@ -35,17 +41,36 @@ public abstract class JmxCacheEntriesPoller extends JmxPoller<Integer> {
    private static final String ATTRIBUTE = "numberOfEntries";
 
    private final String cacheName;
+   private final VisualizerRemoteCacheManager cacheManager;
+   private final SocketAddress address;
 
-   public JmxCacheEntriesPoller(JMXServiceURL jmxUrl, Map<String, Object> jmxEnv, String cacheName) {
+   public JmxCacheEntriesPoller(JMXServiceURL jmxUrl, Map<String, Object> jmxEnv, String cacheName, VisualizerRemoteCacheManager cacheManager, SocketAddress address) {
       super(jmxUrl, jmxEnv);
       this.cacheName = cacheName;
+      this.cacheManager = cacheManager;
+      this.address = address;
    }
 
    abstract protected ObjectName generateObjectName() throws Exception;
 
    @Override
    public Integer doPoll() throws Exception {
-      return Integer.valueOf(getConnection().getAttribute(generateObjectName(), ATTRIBUTE).toString());
+      RemoteCache<Object, Object> cache = cacheManager.getCache(cacheName);
+      final Map<SocketAddress, Set<Integer>> segmentsPerServer = cache.getCacheTopologyInfo().getSegmentsPerServer();
+
+      final Set<Integer> segments = segmentsPerServer.get(address);
+      if (segments != null) {
+         try (final CloseableIterator<?> iter =
+                 cache.retrieveEntries(null, segments, 128)) {
+            int count = 0;
+            while (iter.hasNext()) {
+               count++;
+               iter.next();
+            }
+            return count;
+         }
+      }
+      throw new IllegalStateException("No segments found for server: " + address);
    }
 
    public String getCacheName() {

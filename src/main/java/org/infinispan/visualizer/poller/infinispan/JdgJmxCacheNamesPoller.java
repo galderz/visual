@@ -30,6 +30,7 @@ import java.util.Set;
 import javax.management.ObjectName;
 import javax.management.remote.JMXServiceURL;
 
+import org.infinispan.visualizer.internal.VisualizerRemoteCacheManager;
 import org.infinispan.visualizer.poller.jmx.JmxPoller;
 
 /**
@@ -37,31 +38,17 @@ import org.infinispan.visualizer.poller.jmx.JmxPoller;
  */
 public class JdgJmxCacheNamesPoller extends JmxPoller<String[]> {
    private static final String ATTRIBUTE = "cacheName";
+   private final VisualizerRemoteCacheManager cacheManager;
 
    public JdgJmxCacheNamesPoller(JMXServiceURL jmxUrl,
-                                 Map<String, Object> jmxEnv) {
+                                 Map<String, Object> jmxEnv, VisualizerRemoteCacheManager cacheManager) {
       super(jmxUrl, jmxEnv);
+      this.cacheManager = cacheManager;
    }
 
    @Override
    protected String[] doPoll() throws Exception {
-      Set<ObjectName> objectNames = getConnection().queryNames(new ObjectName("jboss.datagrid-infinispan:type=Cache,name=*,manager=\"clustered\",component=Cache"), null);
-      if (objectNames == null) return null;
-
-      List<String> names = new LinkedList<>();
-
-      for (ObjectName objectName : objectNames) {
-         String name = (String) getConnection().getAttribute(objectName, ATTRIBUTE);
-         if (name == null)
-            continue;
-
-         // ignore internal caches, such ___hotRodTopologyCache
-         if (name.startsWith("___"))
-            continue;
-
-         names.add(name);
-      }
-      return names.toArray(new String[]{});
+      return this.cacheManager.getCacheNames().toArray(new String[0]);
    }
 
 }

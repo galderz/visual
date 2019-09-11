@@ -23,6 +23,7 @@
 
 package org.infinispan.visualizer.poller;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Collection;
@@ -78,13 +79,18 @@ public abstract class PollerManager<T> {
       }
    }
 
-   private String generateNodeId(SocketAddress address) {
-      InetSocketAddress isa = (InetSocketAddress) address;
-      String id = isa.getAddress().getCanonicalHostName() + "-"
+   private String generateNodeId(SocketAddress socketAddress) {
+      InetSocketAddress isa = (InetSocketAddress) socketAddress;
+      final InetAddress address = isa.getAddress();
+      if (address != null) {
+         String id = address.getCanonicalHostName() + "-"
             + isa.getPort();
-      id = id.replaceAll("[^\\d]", "-");
+         id = id.replaceAll("[^\\d]", "-");
 
-      return id;
+         return id;
+      }
+
+      return "----------" + isa.getPort();
    }
 
    abstract protected T createNewInfo(String id, SocketAddress addr);

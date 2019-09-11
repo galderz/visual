@@ -61,11 +61,6 @@ public abstract class JmxPoller<T> implements Poller<T> {
 
    @Override
    public void init() {
-      try {
-         connect();
-      } catch (Exception e) {
-         e.printStackTrace();
-      }
    }
 
    abstract protected T doPoll() throws Exception;
@@ -73,9 +68,6 @@ public abstract class JmxPoller<T> implements Poller<T> {
    @Override
    public T poll() {
       try {
-         if (!connected) {
-            connect();
-         }
          return doPoll();
       } catch (Exception e) {
          disconnect();

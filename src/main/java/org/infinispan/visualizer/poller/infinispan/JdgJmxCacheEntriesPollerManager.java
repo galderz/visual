@@ -55,9 +55,8 @@ public class JdgJmxCacheEntriesPollerManager extends JmxCacheEntriesPollerManage
    }
 
    @Override
-   protected JmxCacheEntriesPoller createPoller(JMXServiceURL url,
-                                                Map<String, Object> env) {
-      return new JdgJmxCacheEntriesPoller(url, env, getCacheName());
+   protected JmxCacheEntriesPoller createPoller(SocketAddress address) {
+      return new JdgJmxCacheEntriesPoller(null, null, getCacheName(), getCacheManager(), address);
    }
 
    @Override
