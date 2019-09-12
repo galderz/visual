@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
@@ -40,6 +41,7 @@ import javax.ws.rs.QueryParam;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.visualizer.cdi.Resources;
+import org.infinispan.visualizer.internal.VisualizerChannelFactory;
 import org.infinispan.visualizer.internal.VisualizerRemoteCacheManager;
 import org.infinispan.visualizer.poller.PollerManager;
 import org.infinispan.visualizer.poller.jmx.JmxCacheEntriesPollerManager;
@@ -50,6 +52,8 @@ import org.infinispan.visualizer.poller.jmx.JmxCacheEntriesPollerManager;
 @Path("/nodes")
 @ApplicationScoped
 public class NodeInfoRestService {
+   private Logger logger = Logger.getLogger(NodeInfoRestService.class.getName());
+
    @Inject
    private VisualizerRemoteCacheManager cacheManager;
 
@@ -68,10 +72,12 @@ public class NodeInfoRestService {
          cacheName = "default(dist_sync)";
       }
 
+      logger.info("Call to getAllNodeInfo");
+
       if (!pollerManagers.containsKey(cacheName)) {
          JmxCacheEntriesPollerManager manager = resources.cacheEntriesPollerManager(cacheManager);
          manager.setCacheName(cacheName);
-         manager.init();
+         manager.init("NodeInfoRestService");
          pollerManagers.put(cacheName, manager);
       }
 

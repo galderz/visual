@@ -30,8 +30,10 @@ import javax.enterprise.inject.Alternative;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+import org.infinispan.client.hotrod.configuration.SaslQop;
 import org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory;
 import org.infinispan.commons.marshall.UTF8StringMarshaller;
+import org.infinispan.visualizer.cdi.Resources;
 
 /**
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
@@ -91,10 +93,27 @@ public class VisualizerRemoteCacheManager extends RemoteCacheManager {
    public static Configuration getCacheProperties() {
       ConfigurationBuilder builder = new ConfigurationBuilder();
 
+      final String serverList = System.getProperty("infinispan.visualizer.serverList");
+
+//      builder
+//         .addServers(serverList)
+//         .marshaller(new UTF8StringMarshaller())
+//         .channelFactory(CHANNEL_FACTORY)
+//         ;
+
       builder
-         .addServers(System.getProperty("infinispan.visualizer.serverList"))
+         .addServers(serverList)
          .marshaller(new UTF8StringMarshaller())
-         .channelFactory(CHANNEL_FACTORY);
+         .channelFactory(CHANNEL_FACTORY)
+         .security().authentication()
+            .enable()
+            .username(Resources.JMX_USERNAME)
+            .password(Resources.JMX_PASSWORD)
+            .realm("ApplicationRealm")
+            .serverName("jdg-server")
+            .saslMechanism("DIGEST-MD5")
+            .saslQop(SaslQop.AUTH)
+      ;
 
       return builder.build();
    }

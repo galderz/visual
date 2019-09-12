@@ -52,9 +52,11 @@ import org.infinispan.visualizer.rest.CacheNameInfo;
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
  */
 public class Resources {
+   private Logger logger = Logger.getLogger(Resources.class.getName());
+
    private String refreshRate = System.getProperty("infinispan.visualizer.refreshRate", "2000");
-   private String jmxUsername = System.getProperty("infinispan.visualizer.jmxUser", "admin");
-   private String jmxPassword = System.getProperty("infinispan.visualizer.jmxPass", "jboss");
+   public static final String JMX_USERNAME = System.getProperty("infinispan.visualizer.jmxUser", "admin");
+   public static final String JMX_PASSWORD = System.getProperty("infinispan.visualizer.jmxPass", "jboss");
    //JMX port offset is calculated by the formula: HotRod port - jmxHotrodPortOffset
    //e.g. 11222 - 1232 = 9990
    private int jmxHotrodPortOffset = Integer.parseInt(System.getProperty("infinispan.visualizer.jmxPortOffset", "1232"));
@@ -77,9 +79,10 @@ public class Resources {
    @Produces
    @Default
    public JmxCacheEntriesPollerManager cacheEntriesPollerManager(VisualizerRemoteCacheManager cacheManager) {
+      logger.info("Call cacheEntriesPollerManager");
       JmxCacheEntriesPollerManager manager = new JdgJmxCacheEntriesPollerManager(cacheManager());
-      manager.setJmxUsername(jmxUsername);
-      manager.setJmxPassword(jmxPassword);
+      manager.setJmxUsername(JMX_USERNAME);
+      manager.setJmxPassword(JMX_PASSWORD);
       manager.setJmxHotrodPortOffset(jmxHotrodPortOffset);
       manager.setRefreshRate(Long.valueOf(refreshRate));
 
@@ -95,13 +98,14 @@ public class Resources {
    @Default
    @ApplicationScoped
    public PollerManager<CacheNameInfo> cacheNamesPoller(VisualizerRemoteCacheManager cacheManager) {
+      logger.info("Call cacheNamesPoller");
       JmxCacheNamesPollerManager manager = new JdgJmxCacheNamesPollerManager(cacheManager);
-      manager.setJmxUsername(jmxUsername);
-      manager.setJmxPassword(jmxPassword);
+      manager.setJmxUsername(JMX_USERNAME);
+      manager.setJmxPassword(JMX_PASSWORD);
       manager.setJmxHotrodPortOffset(jmxHotrodPortOffset);
       manager.setRefreshRate(Long.valueOf(refreshRate));
 
-      manager.init();
+      manager.init("cacheNamesPoller");
 
       return manager;
    }

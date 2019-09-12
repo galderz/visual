@@ -26,6 +26,7 @@ package org.infinispan.visualizer.poller;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,6 +40,8 @@ import java.util.logging.Logger;
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
  */
 public abstract class PollerManager<T> {
+   private Logger logger = Logger.getLogger(PollerManager.class.getName());
+
    public static final long DEFAULT_REFRESH_RATE = 2000L;
    private long refreshRate = DEFAULT_REFRESH_RATE;
 
@@ -61,10 +64,12 @@ public abstract class PollerManager<T> {
 
    abstract protected void updateClusterList();
 
-   public void init() {
+   public void init(String threadName) {
       updateClusterList();
 
+      logger.info("Start updated thread for: " + threadName);
       updateThread = new UpdateThread();
+      updateThread.setName(threadName);
       updateThread.start();
    }
 
@@ -81,27 +86,39 @@ public abstract class PollerManager<T> {
 
    private String generateNodeId(SocketAddress socketAddress) {
       InetSocketAddress isa = (InetSocketAddress) socketAddress;
-      final InetAddress address = isa.getAddress();
-      if (address != null) {
-         String id = address.getCanonicalHostName() + "-"
-            + isa.getPort();
-         id = id.replaceAll("[^\\d]", "-");
-
-         return id;
+      InetAddress address = isa.getAddress();
+      if (address == null) {
+         try {
+            address = InetAddress.getByName(isa.getHostName());
+         } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+         }
       }
 
-      return "----------" + isa.getPort();
+      String id = address.getCanonicalHostName() + "-"
+         + isa.getPort();
+      id = id.replaceAll("[^\\d]", "-");
+
+      return id;
    }
 
    abstract protected T createNewInfo(String id, SocketAddress addr);
 
    protected void updateClusterList(Collection<SocketAddress> addrs) {
+      logger.info("Update cluster list: " + addrs);
+
       Set<SocketAddress> pollersToStop = new HashSet<>();
       pollersToStop.addAll(pollers.keySet());
 
       for (SocketAddress addr : addrs) {
          pollersToStop.remove(addr);
          String id = generateNodeId(addr);
+         logger.info("Generate id=" + id + " for address=" + addr);
+
+//         // Don't send back temporary ids
+//         if (!id.contains("----------------------------------------------"))
+//            continue;
+
          if (!infos.containsKey(id)) {
             T info = createNewInfo(id, addr);
 

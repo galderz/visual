@@ -23,14 +23,19 @@
 
 package org.infinispan.visualizer.internal;
 
+import org.infinispan.visualizer.poller.PollerManager;
+
 import java.net.SocketAddress;
 import java.util.Collection;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
  */
 public class VisualizerChannelFactory extends
       org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory {
+
+   private Logger logger = Logger.getLogger(VisualizerChannelFactory.class.getName());
 
    private volatile ServersRegistry registry;
 
@@ -44,6 +49,7 @@ public class VisualizerChannelFactory extends
 
    @Override
    public void updateServers(Collection<SocketAddress> newServers, byte[] cacheName, boolean quiet) {
+      logger.info("Updated topology: " + newServers);
       super.updateServers(newServers, cacheName, quiet);
       updateServerRegistry();
    }

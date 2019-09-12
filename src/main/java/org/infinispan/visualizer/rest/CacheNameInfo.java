@@ -39,7 +39,9 @@ public class CacheNameInfo {
       // Filter out internal cache names
       List<String> validNames = new ArrayList<>();
       for (String name : names) {
-         if (!name.startsWith("org.infinispan"))
+         if (!name.startsWith("org.infinispan")
+               && !name.startsWith("___")
+               && !name.equals("memcached"))
             validNames.add(name);
       }
 

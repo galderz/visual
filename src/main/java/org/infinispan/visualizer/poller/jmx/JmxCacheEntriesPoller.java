@@ -70,7 +70,7 @@ public abstract class JmxCacheEntriesPoller extends JmxPoller<Integer> {
             return count;
          }
       }
-      throw new IllegalStateException("No segments found for server: " + address);
+      return 0;
    }
 
    public String getCacheName() {
