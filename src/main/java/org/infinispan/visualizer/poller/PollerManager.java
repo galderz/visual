@@ -23,10 +23,8 @@
 
 package org.infinispan.visualizer.poller;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -86,20 +84,8 @@ public abstract class PollerManager<T> {
 
    private String generateNodeId(SocketAddress socketAddress) {
       InetSocketAddress isa = (InetSocketAddress) socketAddress;
-      InetAddress address = isa.getAddress();
-      if (address == null) {
-         try {
-            address = InetAddress.getByName(isa.getHostName());
-         } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-         }
-      }
-
-      String id = address.getCanonicalHostName() + "-"
-         + isa.getPort();
-      id = id.replaceAll("[^\\d]", "-");
-
-      return id;
+      final String id = isa.getHostName() + "-" + isa.getPort();
+      return id.replaceAll("[^\\d]", "-");
    }
 
    abstract protected T createNewInfo(String id, SocketAddress addr);
@@ -114,10 +100,6 @@ public abstract class PollerManager<T> {
          pollersToStop.remove(addr);
          String id = generateNodeId(addr);
          logger.info("Generate id=" + id + " for address=" + addr);
-
-//         // Don't send back temporary ids
-//         if (!id.contains("----------------------------------------------"))
-//            continue;
 
          if (!infos.containsKey(id)) {
             T info = createNewInfo(id, addr);

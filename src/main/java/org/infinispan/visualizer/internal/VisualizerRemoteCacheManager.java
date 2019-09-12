@@ -24,6 +24,7 @@
 package org.infinispan.visualizer.internal;
 
 import java.lang.reflect.Field;
+import java.util.Objects;
 
 import javax.enterprise.inject.Alternative;
 
@@ -33,7 +34,6 @@ import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.SaslQop;
 import org.infinispan.client.hotrod.impl.transport.netty.ChannelFactory;
 import org.infinispan.commons.marshall.UTF8StringMarshaller;
-import org.infinispan.visualizer.cdi.Resources;
 
 /**
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
@@ -95,25 +95,29 @@ public class VisualizerRemoteCacheManager extends RemoteCacheManager {
 
       final String serverList = System.getProperty("infinispan.visualizer.serverList");
 
-//      builder
-//         .addServers(serverList)
-//         .marshaller(new UTF8StringMarshaller())
-//         .channelFactory(CHANNEL_FACTORY)
-//         ;
-
-      builder
-         .addServers(serverList)
-         .marshaller(new UTF8StringMarshaller())
-         .channelFactory(CHANNEL_FACTORY)
-         .security().authentication()
-            .enable()
-            .username(Resources.JMX_USERNAME)
-            .password(Resources.JMX_PASSWORD)
-            .realm("ApplicationRealm")
-            .serverName("jdg-server")
-            .saslMechanism("DIGEST-MD5")
-            .saslQop(SaslQop.AUTH)
-      ;
+      final String username = System.getProperty("infinispan.visualizer.jmxUser");
+      final String password = System.getProperty("infinispan.visualizer.jmxPass");
+      if (Objects.isNull(username) && Objects.isNull(password)) {
+         builder
+            .addServers(serverList)
+            .marshaller(new UTF8StringMarshaller())
+            .channelFactory(CHANNEL_FACTORY)
+            ;
+      } else {
+         builder
+            .addServers(serverList)
+            .marshaller(new UTF8StringMarshaller())
+            .channelFactory(CHANNEL_FACTORY)
+            .security().authentication()
+               .enable()
+               .username(username)
+               .password(password)
+               .realm("ApplicationRealm")
+               .serverName("jdg-server")
+               .saslMechanism("DIGEST-MD5")
+               .saslQop(SaslQop.AUTH)
+         ;
+      }
 
       return builder.build();
    }
