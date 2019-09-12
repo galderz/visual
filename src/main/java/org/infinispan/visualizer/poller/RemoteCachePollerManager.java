@@ -38,7 +38,7 @@ public abstract class RemoteCachePollerManager<T> extends PollerManager<T> {
 
    @Override
    public void updateClusterList() {
-      updateClusterList(cacheManager.getRegistry().getServers());
+      updateClusterList(cacheManager.getChannelFactory().getServers());
    }
 
    public VisualizerRemoteCacheManager getCacheManager() {

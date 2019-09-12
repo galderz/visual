@@ -37,25 +37,10 @@ public class VisualizerChannelFactory extends
 
    private Logger logger = Logger.getLogger(VisualizerChannelFactory.class.getName());
 
-   private volatile ServersRegistry registry;
-
-   public ServersRegistry getRegistry() {
-      return registry;
-   }
-
-   public void setRegistry(ServersRegistry registry) {
-      this.registry = registry;
-   }
-
    @Override
    public void updateServers(Collection<SocketAddress> newServers, byte[] cacheName, boolean quiet) {
       logger.info("Updated topology: " + newServers);
       super.updateServers(newServers, cacheName, quiet);
-      updateServerRegistry();
    }
 
-   protected void updateServerRegistry() {
-      if (registry != null)
-         registry.updateServers(getServers());
-   }
 }

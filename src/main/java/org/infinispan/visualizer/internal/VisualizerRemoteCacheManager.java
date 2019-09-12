@@ -42,28 +42,17 @@ import org.infinispan.commons.marshall.UTF8StringMarshaller;
 public class VisualizerRemoteCacheManager extends RemoteCacheManager {
    private static final Class<? extends ChannelFactory> CHANNEL_FACTORY = VisualizerChannelFactory.class;
 
-   private ServersRegistry registry;
    private PingThread pingThread;
 
    public VisualizerRemoteCacheManager() {
       super(getCacheProperties());
    }
 
-   public ServersRegistry getRegistry() {
-      return registry;
-   }
-
    @Override
    public void start() {
       super.start();
 
-      this.registry = new ServersRegistry();
-
       VisualizerChannelFactory factory = getTransportFactoryViaReflection();
-      if (factory != null) {
-         factory.setRegistry(registry);
-         factory.updateServerRegistry();
-      }
 
       pingThread = new PingThread(this);
       pingThread.start();
